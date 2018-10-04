@@ -6,8 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RawRabbit.Instantiation;
 using RawRabbit;
-using RawRabbit.Pipe;
-
+using RawRabbit.Pipe.Middleware;
 
 namespace Actio.Common.RabbitMq
 {
@@ -16,14 +15,16 @@ namespace Actio.Common.RabbitMq
         public static Task WithCommandHandlerAsync<TCommand>(this IBusClient bus,
             ICommandHandler<TCommand> handler) where TCommand : ICommand
             => bus.SubscribeAsync<TCommand>(msg => handler.HandleAsync(msg),
-                ctx => ctx.UseConsumerConfiguration(cfg =>
-                    cfg.FromDeclaredQueue(q => q.WithName(GetQueueName<TCommand>()))));
+                ctx => ctx.UseConsumeConfiguration(cfg =>
+                    cfg.FromQueue(GetQueueName<TCommand>())));
+        //cfg.FromDeclaredQueue(q => q.WithName(GetQueueName<TCommand>()))));
 
         public static Task WithEventHandlerAsync<TEvent>(this IBusClient bus,
             IEventHandler<TEvent> handler) where TEvent : IEvent
             => bus.SubscribeAsync<TEvent>(msg => handler.HandleAsync(msg),
-                ctx => ctx.UseConsumerConfiguration(cfg =>
-                    cfg.FromDeclaredQueue(q => q.WithName(GetQueueName<TEvent>()))));
+                ctx => ctx.UseConsumeConfiguration(cfg =>
+                    cfg.FromQueue(GetQueueName<TEvent>())));
+        //cfg.FromDeclaredQueue(q => q.WithName(GetQueueName<TEvent>()))));
 
         private static string GetQueueName<T>()
             => $"{Assembly.GetEntryAssembly().GetName()}/{typeof(T).Name}";
