@@ -23,5 +23,13 @@ namespace Actio.Api.Controllers
 
             return Accepted();
         }
+
+        //[HttpPost("")]
+        //public async Task<IActionResult> Post([FromBody]CreateUser command)
+        //{
+        //    await _busClient.PublishAsync(command);
+
+        //    return Accepted();
+        //}
     }
 }
