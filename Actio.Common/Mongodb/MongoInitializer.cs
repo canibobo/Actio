@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
@@ -11,26 +10,28 @@ namespace Actio.Common.Mongodb
     public class MongoInitializer : IDatabaseInitializer
     {
         private readonly IMongoDatabase _database;
+        private readonly IDatabaseSeeder _seeder;
         private bool _initialized;
         private readonly bool _seed;
 
-        public MongoInitializer(IMongoDatabase database, IOptions<MongoOptions> options)
+        public MongoInitializer(IMongoDatabase database, IOptions<MongoOptions> options, IDatabaseSeeder seeder)
         {
             _database = database;
+            _seeder = seeder;
             _seed = options.Value.Seed;
         }
         public async Task InitializeAsync()
         {
             if (_initialized)
-            {
                 return;
-            }
+
             RegisterConventions();
+
             _initialized = true;
-            if (_seed)
-            {
+            if (!_seed)
                 return;
-            }
+
+            await _seeder.SeedAsync();
         }
 
         private void RegisterConventions()

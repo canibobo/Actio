@@ -26,7 +26,7 @@ namespace Actio.Common.Mongodb
 
             });
             services.AddScoped<IDatabaseInitializer, MongoInitializer>();
-            //services.AddScoped<IDatabaseSeeder, MongoSeeder>();
+            services.AddScoped<IDatabaseSeeder, MongoSeeder>();
         }
     }
 }

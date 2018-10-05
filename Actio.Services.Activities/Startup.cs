@@ -1,12 +1,16 @@
 ﻿using Actio.Common.Commands;
 using Actio.Common.Mongodb;
 using Actio.Common.RabbitMq;
+using Actio.Services.Activities.Domain.Repositories;
 using Actio.Services.Activities.Handlers;
+using Actio.Services.Activities.Repositories;
+using Actio.Services.Activities.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Actio.Services.Activities
 {
@@ -26,13 +30,20 @@ namespace Actio.Services.Activities
 
             services.AddLogging();
             services.AddMongoDB(Configuration);
+            services.AddScoped<ICategoryRepo, CategoryRepo>();
+            services.AddScoped<IActivityRepo, ActivityRepo>();
+            services.AddScoped<IDatabaseSeeder, CustomMongoSeeder>();
             services.AddRabbitMq(Configuration);
-            services.AddScoped<ICommandHandler<CreateActivity>, ActivityCreatedHandler>();
+            services.AddScoped<ICommandHandler<CreateActivity>, CreateActivityHandler>();
+            services.AddScoped<IActivityService, ActivityService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env,ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddDebug();
+            loggerFactory.AddConsole();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -43,6 +54,14 @@ namespace Actio.Services.Activities
             }
 
             app.UseHttpsRedirection();
+
+            using (var serviceScope = app.ApplicationServices.CreateScope())
+            {
+                var ctx = serviceScope.ServiceProvider.GetService<IDatabaseInitializer>();
+                ctx.InitializeAsync();
+            }
+
+            //app.ApplicationServices.GetService<IDatabaseInitializer>().InitializeAsync();
             app.UseMvc();
         }
     }
