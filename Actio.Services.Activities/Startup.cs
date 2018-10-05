@@ -1,4 +1,5 @@
 ﻿using Actio.Common.Commands;
+using Actio.Common.Mongodb;
 using Actio.Common.RabbitMq;
 using Actio.Services.Activities.Handlers;
 using Microsoft.AspNetCore.Builder;
@@ -23,8 +24,10 @@ namespace Actio.Services.Activities
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            services.AddLogging();
+            services.AddMongoDB(Configuration);
             services.AddRabbitMq(Configuration);
-            services.AddSingleton<ICommandHandler<CreateActivity>, ActivityCreatedHandler>();
+            services.AddScoped<ICommandHandler<CreateActivity>, ActivityCreatedHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
